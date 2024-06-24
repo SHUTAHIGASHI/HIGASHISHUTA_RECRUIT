@@ -40,6 +40,8 @@ namespace Game
 	/* フォント */
 	// フォントファイル
 	const char* const kFontFileName = "Data/fontData/851Gkktt_005.ttf";
+	// フォント名
+	const char* const kFontName = "851ゴチカクット";
 	// フォントサイズ
 	constexpr int kFontSize = 40;
 

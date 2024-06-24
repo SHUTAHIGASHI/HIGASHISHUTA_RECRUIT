@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include <vector>
+#include <list>
 #include <unordered_map>
 #include "Game.h"
 
@@ -32,7 +32,7 @@ public:
 	void SetPlayerPos(VECTOR pos) { m_playerPos = pos; }
 
 	// オブジェクト情報取得
-	std::vector<std::shared_ptr<class StageObjectBase>> GetStageObject() const { return m_pObjects; }
+	std::list<std::shared_ptr<class StageObjectBase>> GetStageObject() const { return m_pObjects; }
 
 private:
 	// オブジェクト削除
@@ -42,9 +42,9 @@ private:
 	// プレイヤー座標
 	VECTOR m_playerPos;
 	// オブジェクト配列
-	std::vector<std::shared_ptr<class StageObjectBase>> m_pObjects;
+	std::list<std::shared_ptr<class StageObjectBase>> m_pObjects;
 	// アイテム生成座標
-	std::vector<VECTOR> m_itemCreatePos;
+	std::list<VECTOR> m_itemCreatePos;
 
 private:
 	// ステージ管理

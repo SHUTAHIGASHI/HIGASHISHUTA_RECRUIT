@@ -41,7 +41,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	// マテリアル設定
 	MATERIALPARAM Material;
-
 	Material.Diffuse = GetColorF(1.0f, 1.0f, 1.0f, 1.0f);
 	Material.Specular = GetColorF(1.0f, 1.0f, 1.0f, 1.0f);
 	Material.Ambient = GetColorF(1.0f, 1.0f, 1.0f, 1.0f);
@@ -58,7 +57,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		MessageBox(NULL, "フォント読み込み失敗", "", MB_OK);
 	}
 	// 標準フォント設定
-	ChangeFont("851ゴチカクット");
+	ChangeFont(Game::kFontName);
 	SetFontSize(Game::kFontSize);
 
 	// ゲーム中のマウスポインタ描画設定

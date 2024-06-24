@@ -29,6 +29,12 @@ namespace
 	constexpr float kAngleChangeAddNum = 0.03f;
 	constexpr float kAngleChangeSubNum = 0.02f;
 	constexpr float kAngleChangeMax = 0.5f;
+
+	// カーソル速度
+	constexpr float kCursorSpeed = 12.0f;
+	// カーソル範囲
+	constexpr float kCursorRangeX = 300.0f;
+	constexpr float kCursorRangeY = 200.0f;
 	
 	// HP回復量
 	constexpr int kRepairNum = 2;
@@ -59,7 +65,8 @@ namespace
 Player::Player() :
 	m_updateFunc(&Player::NormalUpdate),
 	m_hCrosshairImg(-1),
-	m_hCrosshairImg2(-1),
+	m_cursorPos(VGet(Game::kScreenWidthHalf, Game::kScreenHeightHalf, 0.0f)),
+	m_targetPos(Game::kVecZero),
 	m_avoidDir(Game::kVecZero),
 	m_shotDelay(0),
 	m_chargeRate(0),
@@ -78,7 +85,6 @@ Player::Player() :
 {
 	// 画像データ読込
 	m_hCrosshairImg = LoadGraph("Data/ImageData/crosshair.png");
-	m_hCrosshairImg2 = LoadGraph("Data/ImageData/crosshair_.png");
 	// モデル読み込み
 	m_pModel = std::make_shared<Model>(MV1DuplicateModel(Load::GetInstance().GetHandle("ship")));
 }
@@ -89,7 +95,6 @@ Player::~Player()
 	MV1DeleteModel(m_status.hModel);
 	// クロスヘア画像ハンドル削除
 	DeleteGraph(m_hCrosshairImg);
-	DeleteGraph(m_hCrosshairImg2);
 }
 
 void Player::Init()
@@ -295,12 +300,42 @@ void Player::ControllMove(const InputState& input)
 
 void Player::ControllShot(const InputState& input)
 {
+	// クロスヘアの座標更新
+	if (input.IsPressed(InputType::lookRight))
+	{
+		m_cursorPos.x += kCursorSpeed;
+		if(m_cursorPos.x > Game::kScreenWidthHalf + kCursorRangeX) m_cursorPos.x = Game::kScreenWidthHalf + kCursorRangeX;
+	}
+	if (input.IsPressed(InputType::lookLeft))
+	{
+		m_cursorPos.x -= kCursorSpeed;
+		if(m_cursorPos.x < Game::kScreenWidthHalf - kCursorRangeX) m_cursorPos.x = Game::kScreenWidthHalf - kCursorRangeX;
+	}
+	if (input.IsPressed(InputType::lookUp))
+	{
+		m_cursorPos.y -= kCursorSpeed;
+		if(m_cursorPos.y < Game::kScreenHeightHalf - kCursorRangeY) m_cursorPos.y = Game::kScreenHeightHalf - kCursorRangeY;
+	}
+	if (input.IsPressed(InputType::lookDown))
+	{
+		m_cursorPos.y += kCursorSpeed;
+		if(m_cursorPos.y > Game::kScreenHeightHalf + kCursorRangeY) m_cursorPos.y = Game::kScreenHeightHalf + kCursorRangeY;
+	}
+
+	// ターゲット位置
+	VECTOR targetPos = ConvScreenPosToWorldPos(VGet(m_cursorPos.x, m_cursorPos.y, 0.0f));
+	// 着弾地点の座標
+	VECTOR targetDir = VSub(targetPos, m_pCamera->GetPos());
+	if (VSize(targetDir) > 0) targetDir = VNorm(targetDir);
+	targetDir = VScale(targetDir, ShotParam::kShotSpeed);
+	m_targetPos = VAdd(m_pCamera->GetPos(), VScale(targetDir, ShotParam::kShotTime));
+
 	// プレイヤーの攻撃処理
 	if (input.IsTriggered(InputType::shot))
 	{
 		if (m_shotDelay < 0 && !m_isAvoid)
 		{
-			OnAttack();
+			CreateShot();
 			m_shotDelay = kShotDelay;
 		}
 	}
@@ -342,7 +377,7 @@ void Player::ControllShot(const InputState& input)
 		if (!m_isAvoid)
 		{
 			// チャージショット発射
-			OnChargeAttack();
+			CreateChargeShot();
 		}
 	}
 
@@ -401,24 +436,22 @@ void Player::OnDamage()
 	}
 }
 
-void Player::OnAttack()
+void Player::CreateShot()
 {
-	VECTOR target = VGet(m_status.pos.x, m_status.pos.y, m_status.pos.z + 100.0f);
-	m_pShot.push_back(std::make_shared<Shot>(m_status.pos, target));
+	// ショット生成
+	m_pShot.push_back(std::make_shared<Shot>(m_status.pos, m_targetPos));
 	// 攻撃音再生
 	SoundManager::GetInstance().PlaySE(SoundType::shot);
 	// 攻撃エフェクト再生
 	EffekseerManager::GetInstance().CreateEffect(EffectType::Shot, false, m_pShot.back().get());
 }
 
-void Player::OnChargeAttack()
+void Player::CreateChargeShot()
 {
 	// チャージショット拡大率
 	float scale = static_cast<float>(m_chargeRate / 10);
-	// チャージショットのターゲット座標
-	VECTOR target = VGet(m_status.pos.x, m_status.pos.y, m_status.pos.z + 100.0f);
 	// チャージショット生成
-	m_pShot.push_back(std::make_shared<Shot>(m_status.pos, target));
+	m_pShot.push_back(std::make_shared<Shot>(m_status.pos, m_targetPos));
 	m_pShot.back()->SetScale(scale);
 	// 攻撃音再生
 	SoundManager::GetInstance().PlaySE(SoundType::shot);
@@ -499,13 +532,7 @@ void Player::CheckDead()
 void Player::DrawCrosshair()
 {
 	// 手前のクロスヘア
-	VECTOR pos = VGet(m_status.pos.x, m_status.pos.y, m_status.pos.z + 800.0f);
-	pos = ConvWorldPosToScreenPos(pos);
-	DrawRotaGraphF(pos.x, pos.y, 1.0f, 0.0f, m_hCrosshairImg2, true);
-	// 奥のクロスヘア
-	pos = VGet(m_status.pos.x, m_status.pos.y, m_status.pos.z + 6500.0f);
-	pos = ConvWorldPosToScreenPos(pos);
-	DrawRotaGraphF(pos.x, pos.y, 1.0f, 0.0f, m_hCrosshairImg, true);
+	DrawRotaGraphF(m_cursorPos.x, m_cursorPos.y, 0.5f, 0.0f, m_hCrosshairImg, true);
 }
 
 void Player::DeleteDisableShot()

@@ -2,10 +2,21 @@
 #include "ObjectBase.h"
 #include <DxLib.h>
 
+namespace ShotParam
+{
+	// 弾の速度
+	constexpr float kShotSpeed = 240.0f;
+	// 弾の半径
+	constexpr float kShotRadius = 48.0f;
+	// 弾の有効時間
+	constexpr int kShotTime = 60;
+}
+
 class Shot : public ObjectBase
 {
 public:
 	Shot(VECTOR pos, VECTOR target);
+	Shot(VECTOR pos, ObjectBase* targetObj);
 	~Shot();
 
 	// 更新
@@ -21,7 +32,15 @@ public:
 	// 弾の大きさ設定
 	void SetScale(float scale);
 private:
+	// 生成時の初期処理
+	void Init(VECTOR pos);
+	// ショットの更新
+	void UpdateShotAndTarget();
+
+private:
 	// 弾の有効時間
 	int m_shotTime = 60;
+	// ターゲットオブジェクト
+	ObjectBase* m_targetObject;
 };
 

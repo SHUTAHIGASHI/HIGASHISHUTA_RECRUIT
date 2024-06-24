@@ -1,6 +1,6 @@
 #pragma once
 #include <unordered_map>
-#include <vector>
+#include <list>
 #include <memory>
 #include "Game.h"
 #include "EffectBase.h"
@@ -63,5 +63,5 @@ private:
 	// エフェクトハンドルのマップ
 	std::unordered_map<EffectType, int> m_EffectHandle;
 	// エフェクト
-	std::vector<std::shared_ptr<EffectBase>> m_pEffects;
+	std::list<std::shared_ptr<EffectBase>> m_pEffects;
 };

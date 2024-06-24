@@ -14,7 +14,7 @@ namespace
     constexpr float kShotDistanceMax = 9000.0f;
     constexpr float kShotDistanceMin = 1000.0f;
     // ショットの速度
-    constexpr float kShotSpeed = 48.0f;
+    constexpr float kShotSpeed = 32.0f;
 }
 
 class ObjectEnemyBase :

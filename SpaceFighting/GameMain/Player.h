@@ -2,7 +2,7 @@
 #include "ObjectBase.h"
 #include "Game.h"
 #include "StageObjectBase.h"
-#include <vector>
+#include <list>
 #include <deque>
 
 class Model;
@@ -43,9 +43,9 @@ public:
 	// 被ダメージ時
 	void OnDamage();
 	// 攻撃発射時
-	void OnAttack();
+	void CreateShot();
 	// チャージショット発射時
-	void OnChargeAttack();
+	void CreateChargeShot();
 	// 死亡時
 	void OnDead();
 	// 衝突時
@@ -59,7 +59,7 @@ public:
 	// 各取得関数
 	const float GetDistance() const { return m_status.pos.z; }
 	const int GetCharge() const { return 0; }
-	std::vector<std::shared_ptr<class Shot>> GetShot() const { return m_pShot; }
+	std::list <std::shared_ptr<class Shot>> GetShot() const { return m_pShot; }
 
 private:// プライベート関数
 	// 入力制御
@@ -84,9 +84,12 @@ private:// プライベート関数
 private:// プライベート変数：データ関係
 	// クロスヘア画像ハンドル
 	int m_hCrosshairImg;
-	int m_hCrosshairImg2;
 
 private:// プライベート変数：ステータス関係
+	// カーソル描画位置
+	VECTOR m_cursorPos;
+	// ターゲット座標
+	VECTOR m_targetPos;
 	// 回避ベクトル
 	VECTOR m_avoidDir;
 	// プレイヤーのショット遅延
@@ -112,7 +115,7 @@ private:// プライベート変数：ステータス関係
 
 private:// クラス宣言
 	// ショット
-	std::vector<std::shared_ptr<class Shot>> m_pShot;
+	std::list<std::shared_ptr<class Shot>> m_pShot;
 	// モデル
 	std::shared_ptr<Model> m_pModel;
 	// スコア

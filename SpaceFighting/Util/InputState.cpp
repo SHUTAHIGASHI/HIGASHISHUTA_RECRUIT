@@ -195,14 +195,18 @@ bool InputState::IsTriggered(InputType type)const
 		return !lastKeyState[KEY_INPUT_SPACE] &&
 			keyState[KEY_INPUT_SPACE] ||
 			!(lastPadState & PAD_INPUT_1) &&
-			(padState & PAD_INPUT_1);
+			(padState & PAD_INPUT_1)||
+			!(lastPadState & PAD_INPUT_5) &&
+			(padState & PAD_INPUT_5);
 	}
 	else if (type == InputType::shot)
 	{
 		return !lastKeyState[KEY_INPUT_RSHIFT] &&
 			keyState[KEY_INPUT_RSHIFT] ||
 			!(lastPadState & PAD_INPUT_2) &&
-			(padState & PAD_INPUT_2);
+			(padState & PAD_INPUT_2)||
+			!(lastPadState & PAD_INPUT_6) &&
+			(padState & PAD_INPUT_6);
 	}
 
 	return false;
@@ -296,12 +300,14 @@ bool InputState::IsPressed(InputType type)const
 	else if (type == InputType::avoid)
 	{
 		return keyState[KEY_INPUT_SPACE] ||
-			(padState & PAD_INPUT_1);
+			(padState & PAD_INPUT_1) ||
+			(padState & PAD_INPUT_5);
 	}
 	else if (type == InputType::shot)
 	{
 		return keyState[KEY_INPUT_RSHIFT] ||
-			(padState & PAD_INPUT_2);
+			(padState & PAD_INPUT_2) ||
+			(padState & PAD_INPUT_6);
 	}
 
 	return false;
